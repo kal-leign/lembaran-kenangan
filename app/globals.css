@@ -1,0 +1,393 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #F4EEE1;
+  --paper-deep: #E9DFCB;
+  --ink: #2F2620;
+  --ink-soft: #6B5D50;
+  --gold: #A68A56;
+  --walnut: #4A3426;
+  --line: #D8CCB4;
+  
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+@theme {
+  --color-paper: #F4EEE1;
+  --color-paper-deep: #E9DFCB;
+  --color-ink: #2F2620;
+  --color-ink-soft: #6B5D50;
+  --color-gold: #A68A56;
+  --color-walnut: #4A3426;
+  --color-line: #D8CCB4;
+
+  --font-serif: var(--font-eb-garamond), serif;
+  --font-cormorant: var(--font-cormorant), serif;
+  --font-script: var(--font-pinyon), cursive;
+}
+
+/* Pengaturan Dasar */
+html {
+  background-color: var(--paper);
+  color: var(--ink);
+  scroll-behavior: smooth;
+  font-family: var(--font-eb-garamond), Georgia, serif;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tekstur Grain & Vignette Latar Belakang */
+.vintage-grain {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.038;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.page-vignette {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9998;
+  box-shadow: inset 0 0 100px rgba(47, 38, 32, 0.05), inset 0 0 160px rgba(47, 38, 32, 0.04);
+}
+
+/* Garis Pemisah Klasik dengan Ornamen */
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  color: var(--gold);
+}
+
+.ornament-divider::before,
+.ornament-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background-color: var(--line);
+}
+
+/* Seleksi Teks Elegan */
+::selection {
+  background-color: #E2D3B8;
+  color: #2F2620;
+}
+
+/* ========================================================
+   FRAME FOTO (6 PILIHAN MURNI CSS)
+   ======================================================== */
+
+/* 1. Tanpa Frame */
+.frame-none {
+  background: transparent;
+  padding: 0;
+  border-radius: 2px;
+  box-shadow: 0 4px 15px -2px rgba(47, 38, 32, 0.12), 0 2px 6px -1px rgba(47, 38, 32, 0.08);
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.frame-none:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -4px rgba(47, 38, 32, 0.18), 0 4px 10px -2px rgba(47, 38, 32, 0.12);
+}
+
+/* 2. Galeri Klasik */
+.frame-classic {
+  background: #F7F3EB;
+  padding: 16px;
+  border: 7px solid #231B15;
+  border-radius: 1px;
+  box-shadow: 
+    inset 0 0 0 1px rgba(166, 138, 86, 0.3),
+    0 8px 24px -4px rgba(35, 27, 21, 0.28),
+    0 2px 6px rgba(35, 27, 21, 0.15);
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.frame-classic:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    inset 0 0 0 1px rgba(166, 138, 86, 0.4),
+    0 14px 32px -4px rgba(35, 27, 21, 0.36),
+    0 4px 10px rgba(35, 27, 21, 0.2);
+}
+
+/* 3. Emas Ornamen */
+.frame-gold {
+  background: #F6F1E6;
+  padding: 14px;
+  border: 8px solid #9C804C;
+  border-image: linear-gradient(135deg, #C4AB75 0%, #876C3A 40%, #D4BC88 70%, #7A6032 100%) 8;
+  border-radius: 1px;
+  box-shadow: 
+    inset 1px 1px 2px rgba(255, 255, 255, 0.45),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px #5C4824,
+    0 10px 28px -4px rgba(47, 38, 32, 0.3),
+    0 3px 8px rgba(47, 38, 32, 0.15);
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.frame-gold:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    inset 1px 1px 2px rgba(255, 255, 255, 0.5),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px #5C4824,
+    0 16px 36px -4px rgba(47, 38, 32, 0.38),
+    0 6px 12px rgba(47, 38, 32, 0.22);
+}
+
+/* 4. Kayu Walnut */
+.frame-walnut {
+  background: #F4EFE6;
+  padding: 14px;
+  border: 9px solid #433022;
+  border-radius: 1px;
+  position: relative;
+  box-shadow: 
+    inset 0 0 0 1px rgba(216, 204, 180, 0.8),
+    inset 0 0 10px rgba(0, 0, 0, 0.2),
+    0 10px 30px -4px rgba(42, 29, 20, 0.32),
+    0 3px 8px rgba(42, 29, 20, 0.16);
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.frame-walnut::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border: 9px solid transparent;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(67, 48, 34, 0.95),
+    rgba(67, 48, 34, 0.95) 4px,
+    rgba(77, 55, 40, 0.95) 4px,
+    rgba(77, 55, 40, 0.95) 8px
+  );
+  pointer-events: none;
+  z-index: 0;
+  clip-path: polygon(
+    0% 0%, 100% 0%, 100% 100%, 0% 100%,
+    0% 0%, 9px 9px, 9px calc(100% - 9px), calc(100% - 9px) calc(100% - 9px), calc(100% - 9px) 9px, 9px 9px
+  );
+}
+.frame-walnut:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    inset 0 0 0 1px rgba(216, 204, 180, 0.9),
+    inset 0 0 12px rgba(0, 0, 0, 0.25),
+    0 16px 36px -4px rgba(42, 29, 20, 0.4),
+    0 5px 12px rgba(42, 29, 20, 0.22);
+}
+
+/* 5. Polaroid Vintage */
+.frame-polaroid {
+  background: #FAF8F2;
+  padding: 10px 10px 42px 10px;
+  border-radius: 1px;
+  border: 1px solid rgba(216, 204, 180, 0.4);
+  box-shadow: 
+    0 6px 18px -2px rgba(47, 38, 32, 0.16),
+    0 2px 6px rgba(47, 38, 32, 0.08);
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.frame-polaroid:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 
+    0 14px 30px -4px rgba(47, 38, 32, 0.22),
+    0 4px 10px rgba(47, 38, 32, 0.12);
+}
+
+/* 6. Foto Cetak Lama (Scalloped Vintage Edge) */
+.frame-vintage-print {
+  background: #FBF9F4;
+  padding: 12px;
+  border-radius: 1px;
+  border: 1px dashed rgba(166, 138, 86, 0.45);
+  box-shadow: 
+    0 6px 20px -3px rgba(47, 38, 32, 0.14),
+    0 2px 6px rgba(47, 38, 32, 0.06);
+  position: relative;
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.frame-vintage-print:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 12px 28px -4px rgba(47, 38, 32, 0.2),
+    0 4px 10px rgba(47, 38, 32, 0.1);
+}
+
+/* ========================================================
+   FILTER FOTO (CSS FILTER NON-DESTRUKTIF)
+   ======================================================== */
+.filter-original {
+  filter: none;
+}
+.filter-sepia {
+  filter: sepia(0.42) contrast(0.96) brightness(0.98);
+}
+.filter-bw {
+  filter: grayscale(1) contrast(1.14) brightness(0.96);
+}
+.filter-faded {
+  filter: sepia(0.22) contrast(0.86) brightness(1.05) saturate(0.82);
+}
+
+/* ========================================================
+   GAYA KERTAS (5 PILIHAN MURNI CSS)
+   ======================================================== */
+
+/* 1. Gading Polos */
+.paper-ivory {
+  background-color: #F8F5ED;
+  border: 1px solid #E4DEC9;
+  border-radius: 1px;
+  box-shadow: 0 4px 18px -2px rgba(47, 38, 32, 0.08), 0 1px 4px rgba(47, 38, 32, 0.04);
+}
+
+/* 2. Kertas Tua */
+.paper-aged {
+  background-color: #EFE4CD;
+  background-image: radial-gradient(circle at 50% 50%, #F6EFE0 30%, #E7D7B7 85%, #D6C197 100%);
+  border: 1px solid #D1BF9B;
+  border-radius: 1px;
+  box-shadow: 
+    0 5px 20px -2px rgba(47, 38, 32, 0.12),
+    0 1px 5px rgba(47, 38, 32, 0.06);
+}
+
+/* 3. Kertas Bergaris */
+.paper-lined {
+  background-color: #FAF7F0;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    rgba(166, 138, 86, 0.24) 28px
+  );
+  border: 1px solid #E2DAC8;
+  border-left: 2px solid rgba(166, 75, 75, 0.35);
+  border-radius: 1px;
+  box-shadow: 0 4px 16px -2px rgba(47, 38, 32, 0.09), 0 1px 4px rgba(47, 38, 32, 0.05);
+}
+
+/* 4. Surat Klasik */
+.paper-letter {
+  background-color: #F7F3E9;
+  border: 1px solid #D8CCB4;
+  outline: 1px solid #A68A56;
+  outline-offset: -7px;
+  border-radius: 1px;
+  box-shadow: 0 5px 20px -2px rgba(47, 38, 32, 0.1), 0 1px 4px rgba(47, 38, 32, 0.05);
+}
+
+/* 5. Sobekan Tepi */
+.paper-torn {
+  background-color: #F5EFE3;
+  border: 1px solid #E0D7C4;
+  clip-path: polygon(
+    0% 3px, 3% 0px, 6% 3px, 10% 1px, 15% 4px, 20% 1px, 25% 3px, 30% 0px, 35% 3px, 40% 1px, 45% 4px, 50% 1px, 55% 3px, 60% 0px, 65% 3px, 70% 1px, 75% 4px, 80% 1px, 85% 3px, 90% 0px, 95% 3px, 100% 1px,
+    100% 100%, 97% calc(100% - 3px), 94% 100%, 90% calc(100% - 2px), 85% calc(100% - 4px), 80% calc(100% - 1px), 75% calc(100% - 3px), 70% 100%, 65% calc(100% - 3px), 60% calc(100% - 1px), 55% calc(100% - 4px), 50% calc(100% - 1px), 45% calc(100% - 3px), 40% 100%, 35% calc(100% - 3px), 30% calc(100% - 1px), 25% calc(100% - 4px), 20% calc(100% - 1px), 15% calc(100% - 3px), 10% 100%, 5% calc(100% - 3px), 0% 100%
+  );
+  box-shadow: 0 4px 18px -2px rgba(47, 38, 32, 0.1);
+}
+
+/* ========================================================
+   WARNA TINTA
+   ======================================================== */
+.ink-brown {
+  color: #2F2620;
+}
+.ink-black {
+  color: #383533;
+}
+.ink-blue {
+  color: #1C2833;
+}
+.ink-wine {
+  color: #4A1521;
+}
+
+/* ========================================================
+   TULISAN & FONT KERTAS
+   ======================================================== */
+.font-style-serif {
+  font-family: var(--font-eb-garamond), Georgia, serif;
+}
+.font-style-italic {
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-style: italic;
+}
+.font-style-script {
+  font-family: var(--font-pinyon), cursive;
+  font-size: 1.15em;
+  line-height: 1.4;
+}
+
+/* ========================================================
+   DEKORASI KERTAS (TAPE & PIN)
+   ======================================================== */
+.tape-decor {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1deg);
+  width: 76px;
+  height: 22px;
+  background: rgba(236, 227, 208, 0.76);
+  border-left: 1px dashed rgba(166, 138, 86, 0.4);
+  border-right: 1px dashed rgba(166, 138, 86, 0.4);
+  box-shadow: 0 1px 4px rgba(47, 38, 32, 0.12);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.pin-decor {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #D4AF37, #8B6508 70%, #4A3504 100%);
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+  pointer-events: none;
+}
+.pin-decor::after {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 5px;
+  width: 10px;
+  height: 4px;
+  background: rgba(47, 38, 32, 0.25);
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+/* Transisi halus & prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
