@@ -4,13 +4,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
-import { LogIn, LogOut, Menu, X, User as UserIcon } from 'lucide-react';
+import { LogIn, LogOut, Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<unknown | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const supabase = createClient();
 
@@ -34,7 +33,6 @@ export default function Navbar() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    router.push('/');
     router.refresh();
   };
 
@@ -85,13 +83,9 @@ export default function Navbar() {
           <div className="h-4 w-[1px] bg-[#D8CCB4]" />
 
           {user ? (
-            <div className="flex items-center gap-3">
-              <span
-                className="text-[11px] font-serif text-[#2F2620] bg-[#E9DFCB]/70 px-2.5 py-1 rounded-[1px] border border-[#D8CCB4] flex items-center gap-1.5 max-w-[150px] truncate"
-                title={user.email}
-              >
-                <UserIcon size={11} className="text-[#A68A56] shrink-0" />
-                <span className="truncate">{user.email?.split('@')[0]}</span>
+            <div className="flex items-center gap-4">
+              <span className="text-[11px] uppercase tracking-[0.15em] text-[#A68A56] bg-[#E9DFCB]/60 px-2.5 py-0.5 rounded-sm border border-[#D8CCB4]">
+                Pemilik
               </span>
               <button
                 onClick={handleLogout}
@@ -112,7 +106,7 @@ export default function Navbar() {
               }`}
             >
               <LogIn size={13} />
-              <span>Masuk / Daftar</span>
+              <span>Masuk</span>
             </Link>
           )}
         </nav>
@@ -152,16 +146,15 @@ export default function Navbar() {
 
           {user ? (
             <div className="flex items-center justify-between pt-1">
-              <span className="text-xs font-serif text-[#2F2620] flex items-center gap-1.5 truncate max-w-[200px]">
-                <UserIcon size={12} className="text-[#A68A56]" />
-                <span className="truncate">{user.email}</span>
+              <span className="text-xs uppercase tracking-[0.15em] text-[#A68A56]">
+                Status: Pemilik
               </span>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   handleLogout();
                 }}
-                className="text-xs uppercase tracking-[0.15em] text-[#6B5D50] flex items-center gap-1.5 cursor-pointer"
+                className="text-xs uppercase tracking-[0.15em] text-[#6B5D50] flex items-center gap-1.5"
               >
                 <LogOut size={14} />
                 <span>Keluar</span>
@@ -174,7 +167,7 @@ export default function Navbar() {
               className="text-sm uppercase tracking-[0.2em] text-[#6B5D50] flex items-center gap-2 py-1.5"
             >
               <LogIn size={15} />
-              <span>Masuk / Daftar Akun</span>
+              <span>Masuk Pemilik</span>
             </Link>
           )}
         </div>

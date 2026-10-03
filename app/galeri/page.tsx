@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Photo } from '@/lib/types';
+import { INITIAL_SAMPLE_PHOTOS } from '@/lib/seed-data';
 import PhotoCard from '@/components/PhotoCard';
 import Lightbox from '@/components/Lightbox';
 import UploadPanel from '@/components/UploadPanel';
 import EditPhotoModal from '@/components/EditPhotoModal';
-import { Plus, Image as ImageIcon, Filter, Lock, LogIn, AlertCircle } from 'lucide-react';
+import { Plus, Image as ImageIcon, Filter } from 'lucide-react';
 
 export default function GaleriPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -25,23 +25,21 @@ export default function GaleriPage() {
     async function fetchPhotos() {
       setIsLoading(true);
 
-      // Cek status sesi pemilik akun
+      // Cek status sesi pemilik
       const { data: authData } = await supabase.auth.getUser();
-      const currentUser = authData.user;
-      setIsOwner(!!currentUser);
+      setIsOwner(!!authData.user);
 
-      if (currentUser) {
-        // HANYA ambil foto milik user yang sedang login
-        const { data: dbPhotos } = await supabase
-          .from('photos')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .order('memory_date', { ascending: false, nullsFirst: false });
+      // Ambil daftar foto dari Supabase
+      const { data: dbPhotos, error } = await supabase
+        .from('photos')
+        .select('*')
+        .order('memory_date', { ascending: false, nullsFirst: false });
 
-        setPhotos(dbPhotos || []);
+      if (!error && dbPhotos && dbPhotos.length > 0) {
+        setPhotos(dbPhotos);
       } else {
-        // Pengguna yang belum login TIDAK melihat galeri akun mana pun
-        setPhotos([]);
+        // Jika tabel kosong atau belum ada foto di database, tampilkan contoh estetik
+        setPhotos(INITIAL_SAMPLE_PHOTOS);
       }
 
       setIsLoading(false);
@@ -94,15 +92,13 @@ export default function GaleriPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-[#D8CCB4] pb-6 gap-6">
         <div>
           <span className="text-[11px] uppercase tracking-[0.25em] text-[#A68A56] block mb-1">
-            {isOwner ? 'Album Galeri Pribadimu' : 'Ruang Galeri Terkunci'}
+            Koleksi Visual
           </span>
           <h1 className="font-['Cormorant_Garamond',serif] text-4xl sm:text-5xl font-medium text-[#2F2620] tracking-tight">
             Galeri Kenangan
           </h1>
           <p className="font-['EB_Garamond',serif] italic text-sm sm:text-base text-[#6B5D50] mt-1.5">
-            {isOwner
-              ? 'Potret-potret privat yang hanya bisa dilihat dan dikelola oleh akunmu.'
-              : 'Privat per akun. Pengunjung belum login tidak dapat melihat foto apa pun.'}
+            Setiap potret membingkai detik yang tak berulang.
           </p>
         </div>
 
@@ -127,95 +123,50 @@ export default function GaleriPage() {
             </div>
           )}
 
-          {/* Tombol Tambah Foto */}
-          <button
-            onClick={() => setIsUploadOpen(true)}
-            className="px-4 py-2 bg-[#4A3426] hover:bg-[#2F2620] text-[#F4EEE1] text-xs uppercase tracking-[0.2em] font-medium transition-colors flex items-center gap-2 rounded-[1px] shadow-sm cursor-pointer"
-          >
-            <Plus size={15} />
-            <span>{isOwner ? 'Tambah Foto' : 'Coba Unggah (Mode Tamu)'}</span>
-          </button>
+          {/* Tombol Tambah Foto (Hanya tampil jika login) */}
+          {isOwner && (
+            <button
+              onClick={() => setIsUploadOpen(true)}
+              className="px-4 py-2 bg-[#4A3426] hover:bg-[#2F2620] text-[#F4EEE1] text-xs uppercase tracking-[0.2em] font-medium transition-colors flex items-center gap-2 rounded-[1px] shadow-sm cursor-pointer"
+            >
+              <Plus size={15} />
+              <span>Tambah Foto</span>
+            </button>
+          )}
         </div>
       </div>
-
-      {/* Banner Peringatan Mode Tamu jika ada foto sementara */}
-      {!isOwner && photos.length > 0 && (
-        <div className="p-4 bg-[#FBF7EE] border border-[#D8CCB4] rounded-[1px] flex items-start gap-3 text-xs text-[#6B5D50] font-serif">
-          <AlertCircle size={16} className="text-[#A68A56] shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <strong>Mode Pratinjau Tamu:</strong> Foto di bawah ini hanya tampil sementara di peramban Anda dan tidak disimpan ke server. Masuk atau daftar akun agar kenangan Anda tersimpan aman dan permanen.
-          </div>
-          <Link
-            href="/masuk"
-            className="text-xs uppercase tracking-wider font-semibold text-[#A68A56] hover:underline"
-          >
-            Masuk / Daftar
-          </Link>
-        </div>
-      )}
 
       {/* ========================================================
           TAMPILAN MASONRY FOTO
           ======================================================== */}
       {isLoading ? (
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 space-y-8 animate-pulse">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
               className="bg-[#E9DFCB]/50 h-72 rounded-[1px] border border-[#D8CCB4] break-inside-avoid"
             />
           ))}
         </div>
-      ) : !isOwner && photos.length === 0 ? (
-        /* KONDISI PENGUNJUNG BELUM LOGIN (TIDAK BISA MELIHAT GALERI APA-APA) */
-        <div className="text-center py-20 px-6 bg-[#FAF7F0] border border-[#D8CCB4] rounded-[1px] max-w-lg mx-auto shadow-sm">
-          <div className="w-14 h-14 rounded-full bg-[#E9DFCB] text-[#4A3426] flex items-center justify-center mx-auto mb-4 border border-[#D8CCB4]">
-            <Lock size={22} />
-          </div>
-          <span className="text-[11px] uppercase tracking-[0.25em] text-[#A68A56]">
-            Privasi Terjaga Penuh
-          </span>
-          <h2 className="font-['Cormorant_Garamond',serif] text-3xl font-medium text-[#2F2620] mt-1">
-            Galeri Akun Bersifat Privat
-          </h2>
-          <p className="font-serif italic text-sm text-[#6B5D50] mt-3 leading-relaxed">
-            Setiap kenangan disimpan terpisah per akun. Pengguna lain tidak bisa melihat album Anda, dan Anda tidak bisa melihat album mereka. Silakan masuk atau daftar akun untuk membuka album kenangan Anda sendiri.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/masuk"
-              className="w-full sm:w-auto px-6 py-2.5 bg-[#4A3426] hover:bg-[#2F2620] text-[#F4EEE1] text-xs uppercase tracking-[0.2em] font-medium transition-colors flex items-center justify-center gap-2 rounded-[1px]"
-            >
-              <LogIn size={14} />
-              <span>Masuk / Buka Akun</span>
-            </Link>
-            <button
-              onClick={() => setIsUploadOpen(true)}
-              className="w-full sm:w-auto px-5 py-2.5 border border-[#D8CCB4] hover:border-[#A68A56] bg-white/70 text-[#2F2620] text-xs uppercase tracking-[0.18em] transition-colors rounded-[1px]"
-            >
-              Coba Pratinjau Bingkai
-            </button>
-          </div>
-        </div>
-      ) : photos.length === 0 ? (
-        /* KONDISI PEMILIK SUDAH LOGIN TAPI BELUM ADA FOTO */
+      ) : filteredPhotos.length === 0 ? (
         <div className="text-center py-20 bg-[#FAF7F0] border border-[#D8CCB4]/60 rounded-[1px] p-8 max-w-md mx-auto">
           <ImageIcon size={32} className="mx-auto text-[#A68A56] mb-3 opacity-70" />
           <h3 className="font-['Cormorant_Garamond',serif] text-2xl text-[#2F2620]">
-            Album Anda Masih Sunyi
+            Belum Ada Kenangan
           </h3>
           <p className="font-serif italic text-xs text-[#6B5D50] mt-1.5 leading-relaxed">
-            Belum ada foto yang disematkan di album pribadi ini. Mulailah dari satu kenangan manis.
+            Belum ada foto pada kurasi ini. Mulailah dari satu kenangan manis.
           </p>
-          <button
-            onClick={() => setIsUploadOpen(true)}
-            className="mt-6 px-5 py-2.5 bg-[#4A3426] text-[#F4EEE1] text-xs uppercase tracking-[0.18em] rounded-[1px] cursor-pointer"
-          >
-            + Unggah Foto Pertama
-          </button>
+          {isOwner && (
+            <button
+              onClick={() => setIsUploadOpen(true)}
+              className="mt-6 px-5 py-2.5 bg-[#4A3426] text-[#F4EEE1] text-xs uppercase tracking-[0.18em] rounded-[1px]"
+            >
+              + Unggah Foto Pertama
+            </button>
+          )}
         </div>
       ) : (
-        /* TAMPILAN FOTO PENGGUNA */
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-8">
           {filteredPhotos.map((photo) => (
             <PhotoCard
@@ -223,8 +174,8 @@ export default function GaleriPage() {
               photo={photo}
               isOwner={isOwner}
               onSelect={(p) => setSelectedPhoto(p)}
-              onEdit={isOwner ? (p) => setEditingPhoto(p) : undefined}
-              onDelete={isOwner ? (p) => handlePhotoDeleted(p.id) : undefined}
+              onEdit={(p) => setEditingPhoto(p)}
+              onDelete={(p) => handlePhotoDeleted(p.id)}
             />
           ))}
         </div>

@@ -124,9 +124,6 @@ export default function UploadPanel({
     setIsProcessing(true);
     const successfullySaved: Photo[] = [];
 
-    // Periksa user terautentikasi
-    const { data: { user } } = await supabase.auth.getUser();
-
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       if (item.status === 'done') continue;
@@ -134,100 +131,71 @@ export default function UploadPanel({
       try {
         // Langkah 1: Kompresi Gambar di sisi klien
         updateItemField(item.id, 'status', 'compressing');
-        updateItemField(item.id, 'progress', 30);
+        updateItemField(item.id, 'progress', 25);
 
         const compressed = await compressImage(item.file, 2000, 0.85);
+
+        // Langkah 2: Unggah ke Supabase Storage (bucket 'photos')
+        updateItemField(item.id, 'status', 'uploading');
+        updateItemField(item.id, 'progress', 65);
+
+        const fileExt = compressed.fileName.split('.').pop();
+        const filePath = `memories/${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('photos')
+          .upload(filePath, compressed.blob, {
+            contentType: compressed.blob.type || 'image/webp',
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) {
+          throw new Error(
+            uploadError.message || 'Gagal mengunggah berkas ke penyimpanan.'
+          );
+        }
+
+        // Dapatkan Public URL
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('photos').getPublicUrl(filePath);
+
+        // Langkah 3: Simpan Record ke Tabel Database 'photos'
+        updateItemField(item.id, 'status', 'saving');
+        updateItemField(item.id, 'progress', 90);
 
         // Rotasi acak halus (-1° hingga 1°)
         const randomRotation = Number(((Math.random() - 0.5) * 2).toFixed(1));
 
-        if (user) {
-          // ==================== MODE AKUN TERAUTENTIKASI ====================
-          // Langkah 2: Unggah ke Supabase Storage dalam folder user.id
-          updateItemField(item.id, 'status', 'uploading');
-          updateItemField(item.id, 'progress', 65);
+        const photoPayload = {
+          storage_path: filePath,
+          public_url: publicUrl,
+          width: compressed.width,
+          height: compressed.height,
+          caption: item.caption.trim() || null,
+          memory_date: item.memoryDate || null,
+          frame: item.frame,
+          filter: item.filter,
+          rotation: randomRotation,
+        };
 
-          const fileExt = compressed.fileName.split('.').pop();
-          const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+        const { data: dbData, error: dbError } = await supabase
+          .from('photos')
+          .insert(photoPayload)
+          .select()
+          .single();
 
-          const { error: uploadError } = await supabase.storage
-            .from('photos')
-            .upload(filePath, compressed.blob, {
-              contentType: compressed.blob.type || 'image/webp',
-              cacheControl: '3600',
-              upsert: false,
-            });
-
-          if (uploadError) {
-            throw new Error(
-              uploadError.message || 'Gagal mengunggah berkas ke penyimpanan.'
-            );
-          }
-
-          // Dapatkan Public URL
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from('photos').getPublicUrl(filePath);
-
-          // Langkah 3: Simpan Record ke Tabel Database 'photos' dengan user_id
-          updateItemField(item.id, 'status', 'saving');
-          updateItemField(item.id, 'progress', 90);
-
-          const photoPayload = {
-            user_id: user.id,
-            storage_path: filePath,
-            public_url: publicUrl,
-            width: compressed.width,
-            height: compressed.height,
-            caption: item.caption.trim() || null,
-            memory_date: item.memoryDate || null,
-            frame: item.frame,
-            filter: item.filter,
-            rotation: randomRotation,
-          };
-
-          const { data: dbData, error: dbError } = await supabase
-            .from('photos')
-            .insert(photoPayload)
-            .select()
-            .single();
-
-          if (dbError) {
-            throw new Error(
-              dbError.message || 'Gagal menyimpan data foto ke database.'
-            );
-          }
-
-          updateItemField(item.id, 'status', 'done');
-          updateItemField(item.id, 'progress', 100);
-          updateItemField(item.id, 'savedPhoto', dbData);
-          successfullySaved.push(dbData);
-        } else {
-          // ==================== MODE TAMU (BELUM LOGIN) ====================
-          // Foto dapat dicoba & dipratinjau tapi TIDAK tersimpan ke database/storage
-          updateItemField(item.id, 'status', 'saving');
-          updateItemField(item.id, 'progress', 80);
-
-          const previewObjectUrl = URL.createObjectURL(compressed.blob);
-          const guestPhoto: Photo = {
-            id: `guest-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-            storage_path: '',
-            public_url: previewObjectUrl,
-            width: compressed.width,
-            height: compressed.height,
-            caption: item.caption.trim() || null,
-            memory_date: item.memoryDate || null,
-            frame: item.frame,
-            filter: item.filter,
-            rotation: randomRotation,
-            created_at: new Date().toISOString(),
-          };
-
-          updateItemField(item.id, 'status', 'done');
-          updateItemField(item.id, 'progress', 100);
-          updateItemField(item.id, 'savedPhoto', guestPhoto);
-          successfullySaved.push(guestPhoto);
+        if (dbError) {
+          throw new Error(
+            dbError.message || 'Gagal menyimpan data foto ke database.'
+          );
         }
+
+        updateItemField(item.id, 'status', 'done');
+        updateItemField(item.id, 'progress', 100);
+        updateItemField(item.id, 'savedPhoto', dbData);
+        successfullySaved.push(dbData);
       } catch (err: unknown) {
         const errorMsg =
           err instanceof Error
@@ -242,17 +210,10 @@ export default function UploadPanel({
     setIsProcessing(false);
 
     if (successfullySaved.length > 0) {
-      if (user) {
-        showToast(
-          `Berhasil menyimpan ${successfullySaved.length} lembaran kenangan ke album akun Anda!`,
-          'success'
-        );
-      } else {
-        showToast(
-          `Mode Tamu: ${successfullySaved.length} foto tampil di layar untuk pratinjau, namun tidak tersimpan ke server. Masuk atau daftar akun agar tersimpan selamanya.`,
-          'info'
-        );
-      }
+      showToast(
+        `Berhasil menyimpan ${successfullySaved.length} lembaran kenangan baru!`,
+        'success'
+      );
       onUploadSuccess(successfullySaved);
     }
   };

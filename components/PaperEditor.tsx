@@ -60,10 +60,7 @@ export default function PaperEditor({
       // Rotasi acak halus (-1.2° sampai 1.2°) untuk kesan natural
       const rotation = initialNote?.rotation ?? Number(((Math.random() - 0.5) * 2.4).toFixed(1));
 
-      // Periksa user
-      const { data: { user } } = await supabase.auth.getUser();
-
-      const basePayload = {
+      const payload = {
         kind,
         title: title.trim() || null,
         body: body,
@@ -75,50 +72,29 @@ export default function PaperEditor({
         rotation,
       };
 
-      if (user) {
-        // ==================== MODE AKUN TERAUTENTIKASI ====================
-        const payload = {
-          ...basePayload,
-          user_id: user.id,
-        };
+      if (isNew) {
+        const { data, error } = await supabase
+          .from('notes')
+          .insert(payload)
+          .select()
+          .single();
 
-        if (isNew) {
-          const { data, error } = await supabase
-            .from('notes')
-            .insert(payload)
-            .select()
-            .single();
+        if (error) throw new Error(error.message);
 
-          if (error) throw new Error(error.message);
-
-          showToast('Lembaran kata baru berhasil diabadikan ke buku catatanmu.', 'success');
-          onSaveSuccess(data, true);
-        } else {
-          const { data, error } = await supabase
-            .from('notes')
-            .update(payload)
-            .eq('id', initialNote.id)
-            .select()
-            .single();
-
-          if (error) throw new Error(error.message);
-
-          showToast('Tulisan berhasil diperbarui.', 'success');
-          onSaveSuccess(data, false);
-        }
+        showToast('Lembaran kata baru berhasil diabadikan.', 'success');
+        onSaveSuccess(data, true);
       } else {
-        // ==================== MODE TAMU (BELUM LOGIN) ====================
-        const guestNote: Note = {
-          id: initialNote?.id || `guest-note-${Date.now()}`,
-          ...basePayload,
-          created_at: initialNote?.created_at || new Date().toISOString(),
-        };
+        const { data, error } = await supabase
+          .from('notes')
+          .update(payload)
+          .eq('id', initialNote.id)
+          .select()
+          .single();
 
-        showToast(
-          'Mode Tamu: Tulisan tampil di layar, namun tidak tersimpan ke server. Masuk atau daftar akun agar tersimpan selamanya.',
-          'info'
-        );
-        onSaveSuccess(guestNote, isNew);
+        if (error) throw new Error(error.message);
+
+        showToast('Tulisan berhasil diperbarui.', 'success');
+        onSaveSuccess(data, false);
       }
 
       onClose();
