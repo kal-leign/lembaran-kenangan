@@ -22,6 +22,7 @@ export type NoteKind = 'poem' | 'quote' | 'note';
 
 export interface Photo {
   id: string;
+  user_id?: string;
   storage_path: string;
   public_url: string;
   width?: number | null;
@@ -37,6 +38,7 @@ export interface Photo {
 
 export interface Note {
   id: string;
+  user_id?: string;
   kind: NoteKind;
   title?: string | null;
   body: string;
